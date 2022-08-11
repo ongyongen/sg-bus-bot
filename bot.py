@@ -19,7 +19,7 @@ def get_time_difference(current, arrival):
         time_diff = time_diff if time_diff > 0 else 'Bus has just arrived / left'
         return time_diff 
     else:
-        return "Bus is not in service"
+        return "No info available / Bus is not in service"
 
 # Get bus arrival data from LTA API
 def get_bus_data(bus_stop_code):
