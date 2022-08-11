@@ -11,6 +11,7 @@ TELEGRAM_URL = "https://api.telegram.org/bot"
 
 app = Flask(__name__)
 
+# Calculate time difference between current time & est bus arrival time
 def get_time_difference(current, arrival):
     if arrival != "":
         arrival_time = datetime.fromisoformat(arrival)
@@ -20,6 +21,7 @@ def get_time_difference(current, arrival):
     else:
         return "Bus is not in service"
 
+# Get bus arrival data from LTA API
 def get_bus_data(bus_stop_code):
     url = f"http://datamall2.mytransport.sg/ltaodataservice/BusArrivalv2?BusStopCode={bus_stop_code}"
     payload={}
@@ -41,11 +43,13 @@ def get_bus_data(bus_stop_code):
         bus_arrival += notif 
     return bus_arrival
 
+# Extract chat id and user input bus stop code
 def parse_message(message):
     chat_id = message["message"]["chat"]["id"]
     bus_stop_code = message["message"]["text"]
     return chat_id, bus_stop_code
 
+# Send bus arrival data to user
 def send_message(chat_id, text):
     url = TELEGRAM_URL + TOKEN + '/sendMessage'
     payload = {"chat_id": chat_id, "text": text}
@@ -57,13 +61,12 @@ def index():
     if request.method == 'POST':
         msg = request.get_json()
         chat_id, bus_stop_code = parse_message(msg)
-        if len(bus_stop_code) == 0:
+        bus_data = get_bus_data(bus_stop_code)
+        if bus_data == "":
             send_message(chat_id, "Please enter a valid bus stop code")
-            return Response('Ok', status=200)
         else:
-            bus_data = get_bus_data(bus_stop_code)
             send_message(chat_id, bus_data)
-            return Response('Ok', status=200)
+        return Response('Ok', status=200)
     else:
         return '<h1>SG Bus Bot</h1>'
 
